@@ -4,7 +4,6 @@ import curses
 import sys
 from modem import Modem
 
-
 def main(ans=False):
     default_mic = sc.default_microphone()
     default_speaker = sc.default_speaker()
