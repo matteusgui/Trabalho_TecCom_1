@@ -24,7 +24,7 @@ class Modem:
 
     def put_bits(self, bits):
         if len(bits) == 0:
-            bits.extend([1,1,1,1,1,1,1,1,])
+            bits.extend([1,1,1,1,1,1,1,1])
         self.bits.extend(bits)
 
 
