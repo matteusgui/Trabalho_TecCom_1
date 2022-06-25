@@ -17,17 +17,16 @@ def main(ans=False):
             open('output.raw', 'wb') as f:
         while True:
             # Modulação
-            for i in range(50):
-                modem.put_bits(uart.get_bits())
-                samples = modem.get_samples()
-                f.write(samples.astype('float32').tobytes())
-                sp.play(samples)
+            modem.put_bits(uart.get_bits())
+            samples = modem.get_samples()
+            f.write(samples.astype('float32').tobytes())
+            sp.play(samples)
 
-                # Demodulação
-                data = mic.record(numframes=bufsz)
-                if data.shape[1] > 1:
-                    data = data[:, 0]   # escolha um canal se for stereo
-                modem.put_samples(np.squeeze(data))
+            # Demodulação
+            data = mic.record(numframes=bufsz)
+            if data.shape[1] > 1:
+                data = data[:, 0]   # escolha um canal se for stereo
+            modem.put_samples(np.squeeze(data))
             uart.put_bits(modem.get_bits())
 
 

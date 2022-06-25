@@ -51,8 +51,8 @@ class Modem:
         self.s.extend(data)
 
     def get_bits(self):
-        plt.plot(self.s)
-        plt.show()
+        #plt.plot(self.s)
+        #plt.show()
         s = self.s
         fs=48000
         T=1/fs
@@ -60,6 +60,9 @@ class Modem:
         pi = np.pi
         omega0=2*pi*1180
         omega1=2*pi*980
+
+        if len(self.s) > 8*160:
+            self.s=self.s[-8*160:]
 
         v0i=np.zeros(len(s))
         v0r=np.zeros(len(s))
@@ -79,17 +82,24 @@ class Modem:
         c = abs(v1r**2+v1i**2-v0r**2-v0i**2)
         v = np.zeros(len(c))
         y = np.zeros(len(c))
-        r=0.9999
+        r = 0.9999
         for n in range(1,len(s)):
                 v[n] = (1-r)*c[n] + 2*r*np.cos(2*pi*300/fs)*v[n-1] - r**2*v[n-2]
                 y[n] = v[n] - v[n-2]
-
-        plt.plot(v1r**2+v1i**2-v0r**2-v0i**2, 'r')
+        
+        delta = v1r**2+v1i**2-v0r**2-v0i**2
+        #plt.plot(delta, 'r')
         #plt.plot(y,'g')
 
         filt=scipy.signal.firwin(40, 300, pass_zero='lowpass', fs=48000)
-        #plt.plot(1500*((y[1:]>0)&(y[:-1]<0)), 'g')
-        plt.plot(np.convolve(v1r**2+v1i**2-v0r**2-v0i**2, filt), 'r')  # 46 amostras de delay
-
-        plt.show()
-        return []
+        ponto_amostra = 1*((y[1:]>0)&(y[:-1]<0))
+        #plt.plot(ponto_amostra, 'g')
+        bits = []
+        for i in range (len(ponto_amostra)):
+            if ponto_amostra[i] != 0:
+                bits.append(1 if delta[i] > 0 else 0)
+        #plt.plot(np.convolve(v1r**2+v1i**2-v0r**2-v0i**2, filt), 'r')  # 46 amostras de delay
+       
+        
+        print(bits)
+        return bits[len(bits)-1]
