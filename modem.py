@@ -102,4 +102,4 @@ class Modem:
        
         
         print(bits)
-        return bits[len(bits)-1]
+        return bits
