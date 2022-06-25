@@ -2,6 +2,7 @@ import numpy as np
 
 
 
+
 class Modem:
     def __init__(self, fs, bufsz, ans=False):
         self.bit_rate = 300
