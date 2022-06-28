@@ -8,10 +8,12 @@ class Modem:
         self.fi = 0
         self.bits =[]
         self.s = []
-        v0i=np.zeros(len(s))
-        v0r=np.zeros(len(s))
-        v1i=np.zeros(len(s))
-        v1r=np.zeros(len(s))
+        self.v0i=np.zeros(bufsz)
+        self.v0r=np.zeros(bufsz)
+        self.v1i=np.zeros(bufsz)
+        self.v1r=np.zeros(bufsz)
+        self.y = []
+        self.v = []
         self.fs = fs  # taxa de amostragem
         self.bufsz = bufsz  # quantidade de amostas que devem ser moduladas por vez
         # frequências de modulação (upload)
@@ -52,7 +54,7 @@ class Modem:
     # Demodulação
 
     def put_samples(self, data):
-        self.s.extend(data)
+        self.s = np.append(self.s,data)
 
     def get_bits(self):
         s = self.s
@@ -63,18 +65,24 @@ class Modem:
         omega0=self.rx_omega0
         omega1=self.rx_omega1
 
-        v0i=np.zeros(len(s))
-        v0r=np.zeros(len(s))
-        v1i=np.zeros(len(s))
-        v1r=np.zeros(len(s))
+        tam = len(self.v0i)
+        self.v0i = np.append(self.v0i,np.zeros(len(s)))
+        self.v0r = np.append(self.v0r,np.zeros(len(s)))
+        self.v1i = np.append(self.v1i,np.zeros(len(s)))
+        self.v1r = np.append(self.v1r,np.zeros(len(s)))
+
+        v0i=self.v0i
+        v0r=self.v0r
+        v1i=self.v1i
+        v1r=self.v1r
 
         r=0.99
 
-        for n in range(1,len(s)):
-                v0r[n] = s[n] - r**L * np.cos(omega0*L*T)*s[n-L] + r*np.cos(omega0*T)*v0r[n-1] - r*np.sin(omega0*T)*v0i[n-1]
-                v0i[n] = -r**L*np.sin(omega0*L*T)*s[n-L] + r*np.cos(omega0*T)*v0i[n-1] + r*np.sin(omega0*T)*v0r[n-1]
-                v1r[n] = s[n] - r**L * np.cos(omega1*L*T)*s[n-L] + r*np.cos(omega1*T)*v1r[n-1] - r*np.sin(omega1*T)*v1i[n-1]
-                v1i[n] = -r**L*np.sin(omega1*L*T)*s[n-L] + r*np.cos(omega1*T)*v1i[n-1] + r*np.sin(omega1*T)*v1r[n-1]
+        for n in range(tam,len(s)-1):
+                v0r[n] = s[n-tam] - r**L * np.cos(omega0*L*T)*s[n-L-tam] + r*np.cos(omega0*T)*v0r[n-1] - r*np.sin(omega0*T)*v0i[n-1]
+                v0i[n] = -r**L*np.sin(omega0*L*T)*s[n-L-tam] + r*np.cos(omega0*T)*v0i[n-1] + r*np.sin(omega0*T)*v0r[n-1]
+                v1r[n] = s[n-tam] - r**L * np.cos(omega1*L*T)*s[n-L-tam] + r*np.cos(omega1*T)*v1r[n-1] - r*np.sin(omega1*T)*v1i[n-1]
+                v1i[n] = -r**L*np.sin(omega1*L*T)*s[n-L-tam] + r*np.cos(omega1*T)*v1i[n-1] + r*np.sin(omega1*T)*v1r[n-1]
 
         rho = v1r**2+v1i**2+v0r**2+v0i**2   # carrier detection
 
@@ -83,7 +91,7 @@ class Modem:
         y = np.zeros(len(c))
         r = 0.9999
 
-        for n in range(1,len(s)):
+        for n in range(1,len(v0i)):
                 v[n] = (1-r)*c[n] + 2*r*np.cos(2*pi*300/fs)*v[n-1] - r**2*v[n-2]
                 y[n] = v[n] - v[n-2]
         
@@ -100,7 +108,15 @@ class Modem:
                 bits.append(1 if delta[i] > 0 else 0)
         
         self.s = []
+    
+        self.v0i = v0i[:-self.bufsz]
+        self.v0r = v0r[:-self.bufsz]
+        self.v1i = v1i[:-self.bufsz]
+        self.v1r = v1r[:-self.bufsz]
+        #self.s = s[:-self.bufsz]
+
         
-        print("bits = ", bits)
+
+        #print("bits = ", bits)
         #plt.show()
         return bits
