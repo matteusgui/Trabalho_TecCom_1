@@ -8,6 +8,10 @@ class Modem:
         self.fi = 0
         self.bits =[]
         self.s = []
+        v0i=np.zeros(len(s))
+        v0r=np.zeros(len(s))
+        v1i=np.zeros(len(s))
+        v1r=np.zeros(len(s))
         self.fs = fs  # taxa de amostragem
         self.bufsz = bufsz  # quantidade de amostas que devem ser moduladas por vez
         # frequências de modulação (upload)
@@ -51,18 +55,13 @@ class Modem:
         self.s.extend(data)
 
     def get_bits(self):
-        #plt.plot(self.s)
-        #plt.show()
         s = self.s
-        fs=48000
-        T=1/fs
-        L=fs//300
+        fs= self.fs
+        T = 1/fs
+        L = fs//300
         pi = np.pi
-        omega0=2*pi*1180
-        omega1=2*pi*980
-
-        if len(self.s) > 8*160:
-            self.s=self.s[-8*160:]
+        omega0=self.rx_omega0
+        omega1=self.rx_omega1
 
         v0i=np.zeros(len(s))
         v0r=np.zeros(len(s))
@@ -83,23 +82,25 @@ class Modem:
         v = np.zeros(len(c))
         y = np.zeros(len(c))
         r = 0.9999
+
         for n in range(1,len(s)):
                 v[n] = (1-r)*c[n] + 2*r*np.cos(2*pi*300/fs)*v[n-1] - r**2*v[n-2]
                 y[n] = v[n] - v[n-2]
         
         delta = v1r**2+v1i**2-v0r**2-v0i**2
-        #plt.plot(delta, 'r')
-        #plt.plot(y,'g')
-
-        filt=scipy.signal.firwin(40, 300, pass_zero='lowpass', fs=48000)
-        ponto_amostra = 1*((y[1:]>0)&(y[:-1]<0))
-        #plt.plot(ponto_amostra, 'g')
+        #plt.plot(delta,'r')
+        
+        filt=scipy.signal.firwin(40, 300, pass_zero='lowpass', fs=self.fs)
+        ponto_amostra = 1500*((y[1:]>0)&(y[:-1]<0))
         bits = []
+        #plt.plot(ponto_amostra)
+        #delta = np.convolve(delta, filt)
         for i in range (len(ponto_amostra)):
             if ponto_amostra[i] != 0:
                 bits.append(1 if delta[i] > 0 else 0)
-        #plt.plot(np.convolve(v1r**2+v1i**2-v0r**2-v0i**2, filt), 'r')  # 46 amostras de delay
-       
         
-        print(bits)
+        self.s = []
+        
+        print("bits = ", bits)
+        #plt.show()
         return bits
