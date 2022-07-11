@@ -155,7 +155,7 @@ class Modem:
                 #print(i,"=>",y[i])
 
         for i in range (len(self.lastnlist)):
-            self.lastnlist[i] = self.lastnlist[i]-self.bufsz+2
+            self.lastnlist[i] = self.lastnlist[i]-self.bufsz
 
         #print("lastnlist = ", self.lastnlist)
 
