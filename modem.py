@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.signal
-#import matplotlib.pyplot as plt
+
 
 class Modem:
     def __init__(self, fs, bufsz, ans=False):
