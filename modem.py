@@ -164,11 +164,6 @@ class Modem:
                 self.lastnlist.pop(0)
 
 
-                #self.lastn = i
-                #self.lastn = delta[i]
-                #print("lastn", delta[i-1],delta[i],delta[i+1])
-
-
         #print("bits =",bits)
         #print("len(self.s)=",len(self.s))
         #bits = bits[:]
