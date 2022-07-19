@@ -69,11 +69,10 @@ class Modem:
         #print("Tam = ",tam)
 
         cutoff_index = len(self.s) - len(self.s)%L
-        if(cutoff_index < L):
-            return []
+
         
-        s = self.sbuffer + self.s[:cutoff_index]
-        leftover_s = self.s[cutoff_index:]
+        s = self.sbuffer + self.s
+        
 
         v0i= self.v0i
         v0r= self.v0r
@@ -140,8 +139,10 @@ class Modem:
         #for i in range(L//2 + 46, len(delta), L):
         #   bits.append(1 if delta[i] > 0.5 else 0)
 
-        self.s = leftover_s.copy()
+        self.s = []
         self.sbuffer = s[len(s)-L:] 
+        if len(self.sbuffer) < L:
+            self.sbuffer = [0]*(L - len(self.sbuffer)) + self.sbuffer
         self.y = np.array([y[-1]])
 
         return bits
